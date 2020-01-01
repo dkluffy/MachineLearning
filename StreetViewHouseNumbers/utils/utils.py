@@ -26,18 +26,20 @@ def reformat(x):
     x = x[:5]
     p = len(x)
     x = x + [0]*(5-p)
-    return x
+    return np.array(x)
 
-def load_data(rootdir,pk="digitStruct.mat_pk"):
+def load_data(rootdir,pk="digitStruct.mat_pk",num_only=False):
     pk_path = os.path.join(rootdir,pk)
     image_names,labels = loadpickle(pk_path)
     
     labels_x_len = labels[:,-1:] 
     labels_x_len[labels_x_len>5]=6
     labels_x_len = labels_x_len.astype(float)
-    labels = np.apply_along_axis(reformat,1,labels)
-    labels = np.concatenate((labels_x_len,labels),axis=1)
-    image_names = [os.path.join(rootdir,x) for x in image_names]
+    labels_num = np.apply_along_axis(reformat,1,labels)
+    labels = np.concatenate((labels_x_len,labels_num),axis=1)
+    image_names = np.array([os.path.join(rootdir,x) for x in image_names])
+    if num_only:
+        return image_names,labels_num
 
     return image_names,labels
 
@@ -59,7 +61,7 @@ import tensorflow as tf
     
 def preprocess_image(image):
     image = tf.image.decode_jpeg(image, channels=3)
-    image = tf.image.resize(image, [224, 224])
+    image = tf.image.resize(image, [128, 128])
     image /= 255.0  # normalize to [0,1] range
     return image
 
@@ -93,11 +95,11 @@ def datset_gen(images,lables,batch_size=16,buffer_size=1000):
     return img_lab_ds.shuffle(buffer_size=buffer_size).repeat().batch(batch_size)
 
 
-if __name__ == "__main__":
-    def test_load_data():
-        test_path = os.path.join("..\\dataset","test")
-        X_test,y_test = load_data(test_path)
-        print(X_test[:5],y_test[:5])
-        ds_test = datset_gen(X_test,y_test)
-        print(ds_test.take(1))
-    test_load_data()
+# if __name__ == "__main__":
+#     def test_load_data():
+#         test_path = os.path.join("..\\dataset","test")
+#         X_test,y_test = load_data(test_path)
+#         print(X_test[:5],y_test[:5])
+#         ds_test = datset_gen(X_test,y_test)
+#         print(ds_test.take(1))
+#     test_load_data()

@@ -46,8 +46,6 @@ model.add(
     )
 )
 #2. 另一种办法是: reshape()? 或者CONV输出5个FEATURE MAP 再输入 LSTM
-
-#3. 正确应该是 Visual Attention
 ```
 
 - [ ] 简单训练一个关于坐标与边框的回归损失函数

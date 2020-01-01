@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
 from datetime import datetime
-from utils.utils import savepickle
 
 def train_with_checkpoin_tensorboard(model,**kwargs):
     try:
@@ -9,8 +8,8 @@ def train_with_checkpoin_tensorboard(model,**kwargs):
                
         y_train = kwargs["y_train"]
         val_data   = kwargs["val_data"] # (X_val,y_val)
-        #steps_per_epoch = kwargs["steps_per_epoch"] #len(X)//batch_size
-        #validation_steps = kwargs["validation_steps"]
+        steps_per_epoch = kwargs["steps_per_epoch"] #len(X)//batch_size
+        validation_steps = kwargs["validation_steps"]
 
         run_logdir = kwargs["run_logdir"]
         model_save_file = kwargs["model_save_file"]
@@ -22,9 +21,9 @@ def train_with_checkpoin_tensorboard(model,**kwargs):
         num_epoches = 1000
 
         y_train = None
-        
-        #steps_per_epoch = 100
-        
+        val_data   = None
+        steps_per_epoch = 100
+        validation_steps = 100
 
         run_logdir = "tb_logs"
         model_save_file = "model_%s.h5" % datetime.now().isoformat(timespec='minutes')
@@ -34,33 +33,30 @@ def train_with_checkpoin_tensorboard(model,**kwargs):
     #
     # input
     X_train = kwargs["X_train"]
-    val_data   = kwargs["val_data"]
-    validation_steps = 100
-    steps_per_epoch = kwargs["steps_per_epoch"]
-    num_epoches = 1
+    
     #callbacks
-    #tensorboard_cb = keras.callbacks.TensorBoard(run_logdir)
-    #checkpoint_cb = keras.callbacks.ModelCheckpoint(filepath=model_save_file+"chk.h5", verbose=1)
+    tensorboard_cb = keras.callbacks.TensorBoard(run_logdir)
+    checkpoint_cb = keras.callbacks.ModelCheckpoint(filepath=model_save_file, verbose=1)
 
-    if is_generator:
+    if not is_generator:
         with tf.device(device):
             history = model.fit_generator(X_train,
                 steps_per_epoch=steps_per_epoch,
                 epochs=num_epoches,
                 validation_data=val_data,
-                validation_steps=validation_steps)
-    # else:
-    #     with tf.device(device):
-    #         history = model.fit(X_train,y_train,
-    #             steps_per_epoch=steps_per_epoch,
-    #             epochs=num_epoches,
-    #             validation_data=val_data,
-    #             validation_steps=validation_steps,
-    #             callbacks=[tensorboard_cb,checkpoint_cb])
-    
-    
-    #model.save(model_save_file)
-    savepickle(model_save_file,model)
+                validation_steps=validation_steps,
+                callbacks=[tensorboard_cb,checkpoint_cb])
+    else:
+        with tf.device(device):
+            history = model.fit(X_train,y_train,
+                steps_per_epoch=steps_per_epoch,
+                epochs=num_epoches,
+                validation_data=val_data,
+                validation_steps=validation_steps,
+                callbacks=[tensorboard_cb,checkpoint_cb])
+
+    # -- save --
+    model.save(model_save_file)
 
 
     #-- visualize --
@@ -98,10 +94,3 @@ def train_with_checkpoin_tensorboard(model,**kwargs):
 
 #     def on_batch_end(self, batch, logs={}):
 #         self.losses.append(logs.get('loss'))
-
-
-"""
-                    raise NotImplementedError('Layers with arguments in `__init__` must '
-NotImplementedError: Layers with arguments in `__init__` must override `get_config`.
-
-"""

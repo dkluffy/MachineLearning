@@ -47,3 +47,30 @@ def to_one_hot(n_arr,cls_num):
     return onehot
 to_one_hot([6],7)
 # %%
+import numpy as np
+import pandas as pd 
+
+x1,x2,x3,x4,x5 = [list(range(i,i+11)) for i in [0,10,20,30,40]]
+
+
+
+
+# %%
+batch=np.array([np.stack([x1,x2,x3,x4,x5])*i for i in range(8)])
+batch
+
+
+
+# %%
+batch.shape
+
+# %%
+def losses(labels: list, preds: list):
+    l = 0
+    for i in range(len(labels)):
+        # 这里我可以给不同的label不同的loss操作
+        pass
+    return l
+losses(["aa"],[1])
+
+# %%

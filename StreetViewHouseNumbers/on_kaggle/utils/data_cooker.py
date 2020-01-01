@@ -52,17 +52,14 @@ def loadpickle(fname):
         obj = pickle.load(f)
         
     return obj
-    
-if __name__ == "__main__":
 
-    #root_path = "..\\dataset"
-    train_path = os.path.join(root_path,"train","digitStruct.mat")
-    test_path =  os.path.join(root_path,"test","digitStruct.mat")
-    extra_path = os.path.join(root_path,"extra","digitStruct.mat")
-    
-    for f in [train_path,test_path,extra_path]:
-        img_names,labels = read_mat(f)
-        img_names = np.apply_along_axis(func1,0,img_names)
-        labels = np.apply_along_axis(format_label,0,labels)
-        savepickle(f,img_names,labels)
-    
+root_path = "/kaggle/input/street-view-house-numbers/"
+train_path ="train_digitStruct.mat"
+test_path =  "test_digitStruct.mat"
+extra_path = "extra_digitStruct.mat"
+  
+for f in [train_path,test_path,extra_path]:
+    img_names,labels = read_mat(root_path+f)
+    img_names = np.apply_along_axis(func1,0,img_names)
+    labels = np.apply_along_axis(format_label,0,labels)
+    savepickle(f,img_names,labels)
