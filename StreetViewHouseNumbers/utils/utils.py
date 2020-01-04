@@ -58,11 +58,13 @@ def to_one_hot(n_arr,cls_num):
 
 
 import tensorflow as tf
-    
+
+IMG_SIZE=(128,128)   
 def preprocess_image(image):
     image = tf.image.decode_jpeg(image, channels=3)
-    image = tf.image.resize(image, [128, 128])
+    image = tf.image.resize(image, IMG_SIZE)
     image /= 255.0  # normalize to [0,1] range
+    image -= np.mean(image,keepdims=True)
     return image
 
 def load_and_preprocess_image(path):
@@ -93,6 +95,32 @@ def datset_gen(images,lables,batch_size=16,buffer_size=1000):
     img_lab_ds = tf.data.Dataset.zip((image_ds, label_ds))
 
     return img_lab_ds.shuffle(buffer_size=buffer_size).repeat().batch(batch_size)
+
+
+
+import matplotlib.pyplot as plt
+
+def plt_images(x,ylab=None,is_path=True,num=8):
+    indices = np.arange(x.shape[0])
+    n=1
+    for i in np.random.choice(indices,num):
+        plt.subplot(4,4,n)
+        img = x[i]
+        if is_path:
+            img = tf.io.read_file(img)
+            img = tf.image.decode_jpeg(img, channels=3)
+         
+        plt.imshow(img)
+        #plt.axis("off")
+        n+=2
+        if ylab is not None:
+            yl = np.array_str(ylab[i].flatten())
+            xs = str(img.shape)
+            plt.text(0,-10,"".join((yl,xs)),ha="left", va="bottom", size="medium",color="red")
+    plt.show()
+
+#plt_image_by_path(X_train,y_train)
+
 
 
 # if __name__ == "__main__":

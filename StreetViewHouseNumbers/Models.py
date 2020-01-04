@@ -189,16 +189,27 @@ def svhn_train(input_ds,
     
     return model
 
-def svhn_test(model,test_dataset):
-    test_accuracy = tf.keras.metrics.Accuracy()
-    for (x, y) in test_dataset:
-        logits = model(x)
-        prediction = tf.argmax(logits, axis=1, output_type=tf.int32)
-        test_accuracy(prediction, y)
-    print("Test set accuracy: {:.3%}".format(test_accuracy.result()))
+def test_cnn(input_):
+    #image_in_vision = Input(shape=(image_size[0],image_size[1],3))
+    x = BatchNormalization()(input_)
+    for filter in [32]*2+[64]*1+[128]*1 :
+        x = DefaultConv2D(filter, strides=2, activation='relu')(x)
+        x = BatchNormalization()(x)
+        x = DefaultConv2D(filter, strides=1, activation='relu')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.2)(x)
+        x = MaxPool2D(pool_size=(2,2), padding="SAME")(x)
+   
+    x = Flatten()(x)
+    x = Dense(1024, activation='relu')(x)
+    x = BatchNormalization()(x)
+    x = Dense(1024, activation='relu')(x)
+    h = BatchNormalization()(x)
+
+    return Model(inputs=input_, outputs=h, name='vision')
 
 ################################    
 
 if __name__ == "__main__":
-    model=svhn_model_simple()
+    model=test_cnn(Input(shape=(54,128,3)))
     model.summary()

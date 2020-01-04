@@ -24,30 +24,38 @@
 
 - `Model.py/svhn_train`: 为了实现paper里的$\sum(log(P))$ 用了自定义模型和LOSS，用RESNET34替换了paper里的CNN部分。
 
+### Train
+
+- LOSS NAN : 将图片标准化；增加BN层； 减小BATCH； 使用HE等初始化可以解决
+
+- 多个BATCH后LOSS 几乎没有变化（按优先级）
+
+    - 减小LR 0.025 0.01 0.001 0.0001 ...
+
+    - 改变初始化：有时随机初始化等不同的初始化方案会有意想不到的变化。好的初始化可以加快模型收敛
+
+    - 注意优化最后FEATURE MAP的输出至少应该满足`1 X 1 X num_classes`
+
+    - 使用`SGD` `RMSprop`等优化器，`ADAM`有时候可能难以训练
+
+    - 减小BATCH，16、32、64 等小BATCH非常适合CNN训练，但有些环境不适用
+
+    - 减少输出：实际训练中发现多个输出配置多个LOSS会是模型收敛非常缓慢。所有在设计模型的时候应该尽量只使用最少输出，或者将模型拆分成几部分，收敛后再将模型合并，导入权值
+
+    - LOSS函数：在多个输出的情况下，每个输出分别使用一个LOSS也导致了模型收敛很慢。`设计只使用一个LOSS（待验证，因为改变LOSS可能还要改变label的格式）`
+
+
 ### Todo
 
-- [ ] 加入SAVE_WEIGHTS
-- [ ] 加入tensorboard的LOG功能
+- [X] 加入SAVE_WEIGHTS
+- [X] 加入tensorboard的LOG功能
 - [ ] 尝试只使用Keras的自定义LOSS.参考: [keras-yolo3](https://github.com/qqwweee/keras-yolo3) （把LOSS放在输出，可以模型传递dummy_loss, model.add_loss等）
 
-- [ ] 或者改变最后一层数和和标签格式，使得两个匹配，这样就不需要自定义模型了
+- [X] 或者改变最后一层数和和标签格式，使得两个匹配，这样就不需要自定义模型了
 
-- [ ] 训练模型：测试了以下，当前`Model.py/svhn_train`learning_rate=0.01 不到3个epoch 就出现梯度消失/爆炸(loss:nan)
+- [X] 训练模型：测试了以下，当前`Model.py/svhn_train`learning_rate=0.01 不到3个epoch 就出现梯度消失/爆炸(loss:nan)
 
 - [ ] 尝试使用不同的CNN层，例如原作者的 或 VGG16
-- [ ] 用RNN替换SOFTMAX直接输出数字?-如何实现？[可能的](https://medium.com/smileinnovation/how-to-work-with-time-distributed-data-in-a-neural-network-b8b39aa4ce00)
-
-```python
-#1. 从一开始就使用TimeDistributed
-model.add(
-    TimeDistributed(
-        Conv2D(64, (3,3), activation='relu'), 
-        input_shape=(5, 224, 224, 3) # 5 images...
-    )
-)
-#2. 另一种办法是: reshape()? 或者CONV输出5个FEATURE MAP 再输入 LSTM
-
-#3. 正确应该是 Visual Attention
-```
+- [ ] 用RNN替换SOFTMAX直接输出数字?：参考`keras.layers.Permute(dims)`
 
 - [ ] 简单训练一个关于坐标与边框的回归损失函数
