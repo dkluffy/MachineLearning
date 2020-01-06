@@ -24,7 +24,12 @@
 
 - `Model.py/svhn_train`: 为了实现paper里的$\sum(log(P))$ 用了自定义模型和LOSS，用RESNET34替换了paper里的CNN部分。
 
+
+#
+
 ### Train
+
+- 计算资源：训练CNN最烦人的是计算资源，虽然本地机器只有GTX1050（2GB) +16GB超过KAGGLE上的配置，但是另外的瓶颈来自磁盘。KAGGLE上的训练速度几乎是我的本地机器的5X倍
 
 - LOSS NAN : 将图片标准化；增加BN层； 减小BATCH； 使用HE等初始化可以解决
 
@@ -34,7 +39,7 @@
 
     - 改变初始化：有时随机初始化等不同的初始化方案会有意想不到的变化。好的初始化可以加快模型收敛
 
-    - 注意优化最后FEATURE MAP的输出至少应该满足`1 X 1 X num_classes`
+    - 改变模型结构，注意优化最后FEATURE MAP的输出至少应该满足`1 X 1 X num_classes`
 
     - 使用`SGD` `RMSprop`等优化器，`ADAM`有时候可能难以训练
 
@@ -44,6 +49,7 @@
 
     - LOSS函数：在多个输出的情况下，每个输出分别使用一个LOSS也导致了模型收敛很慢。`设计只使用一个LOSS（待验证，因为改变LOSS可能还要改变label的格式）`
 
+# 
 
 ### Todo
 
@@ -59,3 +65,5 @@
 - [ ] 用RNN替换SOFTMAX直接输出数字?：参考`keras.layers.Permute(dims)`
 
 - [ ] 简单训练一个关于坐标与边框的回归损失函数
+
+- [ ] 看到一个比较好的[模型](https://github.com/devinsaini/svhn/blob/master/jupyter/svhntrain.ipynb) 该模型有两个输入（IMG,digital_location）两个输出(字符长度，logP)， 这样需要把原来的标签拆成N个，一副图片对应N个标签. 也就是该作者把模型拆成两个部分一个只输出`字符长度`，一个只输出`digital_location 的字符`。看了作者的训练过程收敛非常快，对此表示很怀疑，他几乎没有什么优化，几个EPOCH就让LOSS下降到1以下，ACC达到80%+。
